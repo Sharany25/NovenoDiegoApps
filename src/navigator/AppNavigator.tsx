@@ -1,21 +1,29 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/HomeScreen';
-import FormularioScreen from '../screens/FormularioScreen';
-import { Servicio } from '../interfaces/types';
+import { AutosHomeScreen } from '../screens/AutosHomeScreen';
+import { AutoFormScreen } from '../screens/AutoFormScreen';
+import { Auto } from '../interfaces/auto';
 
 export type RootStackParamList = {
-  Home: undefined;
-  Formulario: { servicio?: Servicio };
+  AutosHome: undefined;
+  AutoForm: { auto?: Auto };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="Formulario" component={FormularioScreen} />
+    <Stack.Navigator initialRouteName="AutosHome">
+      <Stack.Screen
+        name="AutosHome"
+        component={AutosHomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AutoForm"
+        component={AutoFormScreen}
+        options={{ title: 'Registrar / Editar Auto' }}
+      />
     </Stack.Navigator>
   );
 }
