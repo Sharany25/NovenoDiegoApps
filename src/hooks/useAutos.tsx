@@ -1,4 +1,3 @@
-// src/hooks/useAutos.ts
 import { useState } from 'react';
 import { Auto } from '../interfaces/auto';
 
