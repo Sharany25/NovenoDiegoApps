@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
   Platform,
   KeyboardAvoidingView,
@@ -17,6 +16,8 @@ import { Auto } from '../interfaces/auto';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigator/AppNavigator';
 import { Ionicons } from '@expo/vector-icons';
+import SuccessAlert from '../components/SuccessAlert';
+import ErrorAlert from '../components/ErrorAlert';
 
 const emptyAuto: Auto = {
   kilometraje: 0,
@@ -41,6 +42,13 @@ export const AutoFormScreen: React.FC = () => {
   const { addAuto, updateAuto } = useAutos();
   const [form, setForm] = useState<Auto>(route.params?.auto ?? emptyAuto);
 
+  // ALERTAS custom
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [successTitle, setSuccessTitle] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   useEffect(() => {
     if (route.params?.auto) setForm(route.params.auto);
   }, [route.params?.auto]);
@@ -48,7 +56,8 @@ export const AutoFormScreen: React.FC = () => {
   const pickImage = async (idx: number) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permiso requerido', 'Se necesita acceso a tus fotos para seleccionar una imagen.');
+      setErrorMessage('Se necesita acceso a tus fotos para seleccionar una imagen.');
+      setErrorVisible(true);
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -81,21 +90,34 @@ export const AutoFormScreen: React.FC = () => {
       !form.anio ||
       !form.kilometraje
     ) {
-      Alert.alert('Error', 'Completa todos los campos y selecciona 5 imágenes.');
+      setErrorMessage('Completa todos los campos y selecciona 5 imágenes.');
+      setErrorVisible(true);
       return;
     }
     try {
       if (form._id) {
         await updateAuto(form._id, form);
-        Alert.alert('¡Auto actualizado!', 'El auto se actualizó correctamente.');
+        setSuccessTitle('¡Auto actualizado!');
+        setSuccessMessage('El auto se actualizó correctamente.');
       } else {
         await addAuto(form);
-        Alert.alert('¡Auto agregado!', 'Tu auto se guardó correctamente.');
+        setSuccessTitle('¡Auto agregado!');
+        setSuccessMessage('Tu auto se guardó correctamente.');
       }
-      navigation.goBack();
+      setSuccessVisible(true);
     } catch {
-      Alert.alert('Error', 'Ocurrió un error al guardar.');
+      setErrorMessage('Ocurrió un error al guardar.');
+      setErrorVisible(true);
     }
+  };
+
+  const handleCloseSuccess = () => {
+    setSuccessVisible(false);
+    navigation.goBack();
+  };
+
+  const handleCloseError = () => {
+    setErrorVisible(false);
   };
 
   return (
@@ -207,9 +229,21 @@ export const AutoFormScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <SuccessAlert
+        visible={successVisible}
+        title={successTitle}
+        message={successMessage}
+        onClose={handleCloseSuccess}
+      />
+      <ErrorAlert
+        visible={errorVisible}
+        message={errorMessage}
+        onClose={handleCloseError}
+      />
     </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

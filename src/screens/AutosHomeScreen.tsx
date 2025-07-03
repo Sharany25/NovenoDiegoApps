@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   ScrollView,
   Dimensions,
   Platform,
@@ -19,6 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigator/AppNavigator';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ConfirmAlert from '../components/ConfirmAlert';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -26,6 +26,8 @@ export const AutosHomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { autos, loading, fetchAutos, deleteAuto } = useAutos();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<string | undefined>(undefined);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,10 +37,21 @@ export const AutosHomeScreen: React.FC = () => {
 
   const handleDelete = (id?: string) => {
     if (!id) return;
-    Alert.alert('Eliminar', '¿Seguro que deseas eliminar este auto?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Eliminar', onPress: () => deleteAuto(id), style: 'destructive' },
-    ]);
+    setIdToDelete(id);
+    setConfirmVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (idToDelete) {
+      deleteAuto(idToDelete);
+    }
+    setConfirmVisible(false);
+    setIdToDelete(undefined);
+  };
+
+  const cancelDelete = () => {
+    setConfirmVisible(false);
+    setIdToDelete(undefined);
   };
 
   const cardWidth = windowWidth > 400 ? 370 : windowWidth - 24;
@@ -147,6 +160,13 @@ export const AutosHomeScreen: React.FC = () => {
           }
         />
       )}
+      <ConfirmAlert
+        visible={confirmVisible}
+        title="Eliminar"
+        message="¿Seguro que deseas eliminar este auto?"
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </View>
   );
 };
